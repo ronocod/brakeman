@@ -194,12 +194,14 @@ module Brakeman
         files.uniq.lazy
       else
         if directory == '.'
-          pattern = File.join(top_directories_pattern, '**', "#{name}#{extensions}")
+          patterns = top_directories.map do |top_directory|
+            File.join(top_directory, '**', "#{name}#{extensions}")
+          end
         else
-          pattern = "#{root_search_pattern}#{directory}/**/#{name}#{extensions}"
+          patterns = ["#{root_search_pattern}#{directory}/**/#{name}#{extensions}"]
         end
 
-        Dir.glob(pattern).lazy
+        Dir.glob(patterns).lazy
       end
     end
 
@@ -294,7 +296,7 @@ module Brakeman
       files.match(project_relative_path)
     end
 
-    def top_directories_pattern
+    def top_directories
       top_dirs = convert_to_file_paths(Dir.glob(File.join(root_search_pattern, '*/')))
       top_dirs.reject! { |d| File.symlink?(d) or !File.directory?(d) }
       top_dirs = reject_global_excludes(top_dirs)
@@ -303,9 +305,9 @@ module Brakeman
       if top_dirs.empty?
         # Fall back to searching everything, otherwise the empty pattern
         # will start searching from the global root
-        root_search_pattern
+        [root_search_pattern]
       else
-        "{#{top_dirs.join(',')}}"
+        top_dirs
       end
     end
 
