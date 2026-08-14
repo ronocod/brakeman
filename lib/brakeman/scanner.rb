@@ -125,7 +125,13 @@ class Brakeman::Scanner
   end
 
   def parse_files(ruby_paths:, template_paths:)
-    fp = Brakeman::FileParser.new(tracker.app_tree, tracker.options[:parser_timeout], tracker.options[:parallel_checks], tracker.options[:use_prism])
+    parallel = tracker.options.fetch(:parallel_parsing, tracker.options[:parallel_checks])
+    fp = Brakeman::FileParser.new(
+      tracker.app_tree,
+      tracker.options[:parser_timeout],
+      parallel,
+      tracker.options[:use_prism]
+    )
 
     fp.parse_files ruby_paths
 

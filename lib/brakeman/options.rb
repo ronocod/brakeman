@@ -41,6 +41,12 @@ module Brakeman::Options
 
         opts.on "-n", "--no-threads", "Run checks and file parsing sequentially" do
           options[:parallel_checks] = false
+          options[:parallel_parsing] = false
+        end
+
+        opts.on "--[no-]parallel-checks", "Run checks in parallel (Default)" do |parallel|
+          options[:parallel_checks] = parallel
+          options[:parallel_parsing] = true unless parallel
         end
 
         opts.on "--[no-]progress", "Show progress reports" do |progress|

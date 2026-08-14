@@ -130,6 +130,14 @@ class BrakemanOptionsTest < Minitest::Test
       :app_path => "#{TEST_PATH}/apps/rails4"})
 
     assert !options[:parallel_checks]
+    assert !options[:parallel_parsing]
+  end
+
+  def test_no_parallel_checks_option
+    options = setup_options_from_input("--no-parallel-checks")
+
+    assert !options[:parallel_checks]
+    assert options[:parallel_parsing]
   end
 
   def test_path_option
