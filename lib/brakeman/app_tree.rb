@@ -3,7 +3,9 @@ require 'brakeman/file_path'
 
 module Brakeman
   class AppTree
-    VIEW_EXTENSIONS = %w[html.erb html.haml rhtml js.erb html.slim].join(",")
+    VIEW_EXTENSION_LIST = %w[html.erb html.haml rhtml js.erb html.slim].freeze
+    VIEW_EXTENSIONS = VIEW_EXTENSION_LIST.join(",")
+    TEMPLATE_EXTENSIONS = %w[erb haml slim rhtml].freeze
 
     attr_reader :root
 
@@ -119,8 +121,26 @@ module Brakeman
     end
 
     def template_paths
-      @template_paths ||= find_paths(".", "*.{#{VIEW_EXTENSIONS}}") +
-        find_paths(".", "*.{erb,haml,slim}").reject { |path| File.basename(path).count(".") > 1 }
+      @template_paths ||= begin
+        paths_by_extension = Hash.new { |hash, extension| hash[extension] = [] }
+
+        find_paths(".", "*.{#{TEMPLATE_EXTENSIONS.join(",")}}").each do |path|
+          basename = File.basename(path)
+          extension = VIEW_EXTENSION_LIST.find do |ext|
+            basename.end_with?(".#{ext}")
+          end
+
+          if extension
+            paths_by_extension[extension] << path
+          elsif basename.count(".") <= 1
+            paths_by_extension[File.extname(basename).delete_prefix(".")] << path
+          end
+        end
+
+        (VIEW_EXTENSION_LIST + TEMPLATE_EXTENSIONS.take(3)).flat_map do |extension|
+          paths_by_extension[extension]
+        end
+      end
     end
 
     def layout_exists?(name)

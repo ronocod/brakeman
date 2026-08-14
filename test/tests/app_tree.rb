@@ -134,6 +134,33 @@ class AppTreeTests < Minitest::Test
     end
   end
 
+  def test_template_paths
+    Dir.mktmpdir do |dir|
+      included = %w[
+        a.html.erb
+        b.html.haml
+        c.rhtml
+        d.js.erb
+        e.html.slim
+        f.erb
+        g.haml
+        h.slim
+      ]
+      excluded = %w[
+        i.text.erb
+        j.js.haml
+        k.text.slim
+      ]
+
+      (included + excluded).each do |path|
+        FileUtils.touch(File.join(dir, path))
+      end
+
+      at = Brakeman::AppTree.new(dir)
+      assert_equal included, at.template_paths.map(&:relative).to_a
+    end
+  end
+
   def test_match_path
     temp_dir_and_file_from_path('match/this/file.rb') do |dir, file|
       at = Brakeman::AppTree.new(dir)
