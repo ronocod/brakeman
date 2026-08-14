@@ -183,13 +183,15 @@ class Brakeman::FindAllCalls < Brakeman::BasicProcessor
   #Returns method chain as an array
   #For example, User.human.alive.all would return [:User, :human, :alive, :all]
   def get_chain call
-    if node_type? call, :call, :attrasgn, :safe_call, :safe_attrasgn
-      get_chain(call.target) + [call.method]
-    elsif call.nil?
-      []
-    else
-      [get_target(call)]
+    chain = []
+
+    while node_type? call, :call, :attrasgn, :safe_call, :safe_attrasgn
+      chain << call.method
+      call = call.target
     end
+
+    chain << get_target(call) unless call.nil?
+    chain.reverse
   end
 
   def make_location

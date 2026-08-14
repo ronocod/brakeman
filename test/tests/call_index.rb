@@ -124,6 +124,12 @@ class CallIndexTests < Minitest::Test
     assert_found 1, :target => /^x$/, :method => :z, :chained => true
   end
 
+  def test_call_chain
+    call = @call_index.find_calls(target: :x, method: :z, chained: true).first
+
+    assert_equal [:x, :y, :z], call[:chain]
+  end
+
   def test_find_class_scope_call_by_method
     assert_found 1, :method => :do_a_thing
   end
